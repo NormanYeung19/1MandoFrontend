@@ -61,10 +61,11 @@ const HowToStudyModal = ({ onClose }) => {
         <h2 className="text-2xl font-bold mb-4">How to Study Effectively</h2>
         <ul className="list-disc list-inside space-y-2 mb-4">
           <li>Focus on one group per day, reviewing previous days' words.</li>
-          <li>Use the 'G' (Green) button for words you recognize instantly.</li>
-          <li>Use the 'R' (Red) button for words you need to review more.</li>
-          <li>Press 'D' or double-click to show word details and example sentences.</li>
-          <li>Press 'S' or use the audio button to hear the pronunciation.</li>
+          <li>Click on a word once to focus it (blue outline).</li>
+          <li>Click again or press 'D' to show word details and example sentences.</li>
+          <li>Use the 'G' key for words you recognize instantly (turns green).</li>
+          <li>Use the 'R' key for words you need to review more (turns red).</li>
+          <li>Press 'S' to hear the pronunciation of the focused word.</li>
           <li>Practice writing the characters to reinforce memory.</li>
           <li>Create sentences using new words to understand context.</li>
           <li>Review red-marked words more frequently.</li>
@@ -96,6 +97,11 @@ const ChineseVocabularyTrainerWithPopup = () => {
     localStorage.setItem('knownWords', JSON.stringify(knownWords));
   }, [knownWords]);
 
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [focusedWordId, currentMode]);
+
   const playAudio = (character) => {
     if (audioRef.current) {
       audioRef.current.src = `/audio/${character}.mp3`;
@@ -103,22 +109,23 @@ const ChineseVocabularyTrainerWithPopup = () => {
     }
   };
 
-  const handleKeyPress = (groupIndex, wordIndex, e) => {
-    const wordId = `${currentDay}-${groupIndex}-${wordIndex}`;
+  const handleKeyPress = (e) => {
+    if (!focusedWordId) return;
+
+    const [day, groupIndex, wordIndex] = focusedWordId.split('-').map(Number);
     const word = currentMode === 'vocabulary' 
       ? vocabularyGroups[groupIndex].words[wordIndex]
       : sentenceGroups[groupIndex].words[wordIndex];
-    switch(e.key) {
+
+    switch(e.key.toLowerCase()) {
       case 'g':
-        setKnownWords(prev => ({...prev, [wordId]: 'known'}));
+        setKnownWords(prev => ({...prev, [focusedWordId]: 'known'}));
         break;
       case 'r':
-        setKnownWords(prev => ({...prev, [wordId]: 'unknown'}));
+        setKnownWords(prev => ({...prev, [focusedWordId]: 'unknown'}));
         break;
       case 'd':
-        if (focusedWordId === wordId) {
-          setSelectedWord(word);
-        }
+        setSelectedWord(prev => prev ? null : word);
         break;
       case 's':
         playAudio(word.character);
@@ -127,15 +134,12 @@ const ChineseVocabularyTrainerWithPopup = () => {
   };
 
   const handleWordClick = (word, wordId) => {
-    console.log('Clicked word:', wordId, 'Current focused:', focusedWordId);
     if (focusedWordId === wordId) {
       setSelectedWord(word);
-      setFocusedWordId(null);
     } else {
       setFocusedWordId(wordId);
       setSelectedWord(null);
     }
-    console.log('After click - Focused:', wordId, 'Selected:', word ? word.character : null);
   };
 
   const resetEverything = () => {
@@ -201,17 +205,16 @@ const ChineseVocabularyTrainerWithPopup = () => {
             {group.words.map((word, wordIndex) => {
               const wordId = `${currentDay}-${groupIndex}-${wordIndex}`;
               const isSelected = focusedWordId === wordId;
-              console.log('Rendering word:', wordId, 'Is selected:', isSelected);
               return (
                 <div 
                   key={wordIndex} 
                   className={`p-2 mb-1 cursor-pointer ${
+                    isSelected ? 'outline outline-2 outline-blue-500 ' : ''
+                  }${
                     knownWords[wordId] === 'known' ? 'bg-green-200' :
-                    knownWords[wordId] === 'unknown' ? 'bg-red-200' :
-                    isSelected ? 'outline outline-2 outline-blue-500' : ''
+                    knownWords[wordId] === 'unknown' ? 'bg-red-200' : ''
                   }`}
                   onClick={() => handleWordClick(word, wordId)}
-                  onKeyDown={(e) => handleKeyPress(groupIndex, wordIndex, e)}
                   tabIndex={0}
                 >
                   <div className="font-normal">
@@ -237,9 +240,10 @@ const ChineseVocabularyTrainerWithPopup = () => {
       <audio ref={audioRef} />
 
       <div className="mt-6 text-center text-sm text-gray-600">
-        <p>Click on a word to focus it, then click again or press 'D' to show its details.</p>
-        <p>Press 'G' if you recognized the word without needing to check the definition.</p>
-        <p>Press 'R' if you didn't recognize the word and needed to check the definition.</p>
+        <p>Click on a word once to focus it (blue outline).</p>
+        <p>Click again or press 'D' to show its details.</p>
+        <p>Press 'G' if you recognized the focused word without needing to check the definition.</p>
+        <p>Press 'R' if you didn't recognize the focused word and needed to check the definition.</p>
         <p>Press 'S' to play the audio for the focused word.</p>
       </div>
     </div>
