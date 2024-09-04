@@ -1,10 +1,10 @@
-import React from 'react';
-import ChineseVocabularyTrainerWithPopup from './ChineseVocabularyTrainerWithPopup';
+import React from "react";
+import Home from "./components/home";
 
 function App() {
   return (
     <div className="App">
-      <ChineseVocabularyTrainerWithPopup/>
+      <Home />
     </div>
   );
 }
