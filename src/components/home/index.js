@@ -254,23 +254,38 @@ const Home = () => {
 
       <audio ref={audioRef} />
 
-      <div className="mt-6 text-center text-sm text-gray-600">
-        <p>Click on a word once to focus it (blue outline).</p>
+      <div className="mt-8 bg-gray-100 p-6 rounded-lg shadow-md">
+        <h3 className="text-xl font-bold mb-4">Practice Sentences</h3>
 
-        <form onSubmit={handleSentenceSubmit}>
-          <label>
-            Enter a Sentence
-            <input type="text" name="sentence" />
-          </label>
-          <button type="submit">Submit</button>
+        <form onSubmit={handleSentenceSubmit} className="mb-6">
+          <div className="flex items-center">
+            <input
+              type="text"
+              name="sentence"
+              placeholder="Enter a sentence in English"
+              className="flex-grow p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 transition duration-200"
+            >
+              Translate
+            </button>
+          </div>
         </form>
 
-        {translatedSentences.map((sentence, index) => (
-          <div key={index}>
-            <p>{sentence.chinese}</p>
-            <p>{sentence.english}</p>
-          </div>
-        ))}
+        <div className="space-y-4">
+          {translatedSentences.map((sentence, index) => (
+            <div key={index} className="bg-white p-4 rounded-md shadow">
+              <p className="text-lg font-semibold mb-2">{sentence.chinese}</p>
+              <p className="text-gray-600">{sentence.english}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6 text-center text-sm text-gray-600">
+        <p>Click on a word once to focus it (blue outline).</p>
       </div>
     </div>
   );
