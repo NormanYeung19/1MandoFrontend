@@ -285,7 +285,7 @@ const Home = () => {
       </div>
 
       <div className="mt-6 text-center text-sm text-gray-600">
-        <p>Click on a word once to focus it (blue outline).</p>
+        <p>Enter a sentence in English.</p>
       </div>
     </div>
   );
